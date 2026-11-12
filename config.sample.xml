@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy to  C:\ProgramData\PdmApproveConvert\config.xml  on every PC that runs PDM Explorer / SOLIDWORKS.
+  (Whoever clicks the state change launches the task, so the PC of the approving manager matters.)
+  Re-read on every state change: no restart needed.
+  NO config.xml on a PC = the add-in does nothing at all on that PC.
+
+  DryRun=true  -> only writes to the log, starts nothing. Test with this first.
+-->
+<Config>
+  <DryRun>true</DryRun>
+
+  <!-- PILOT LOCK. Only files whose name starts with this are ever touched. Leave it on for the first
+       live test; delete the element (or leave it empty) to cover all files. -->
+  <OnlyNamesStartingWith>CLAUDE_TEST</OnlyNamesStartingWith>
+
+  <!-- Exact state names (case-insensitive). From Probe.exe. -->
+  <ApprovedStates>
+    <State>Manager Approved</State>
+    <State>Library-Manager Approved</State>
+    <State>SWE Managers Approved</State>
+  </ApprovedStates>
+
+  <!-- Which task runs for which file type. Task = exact name from Probe.exe (extra spaces ignored). -->
+  <Rules>
+    <Rule Extensions=".sldprt,.sldasm" Task="STEP file from 3D Model" />
+    <Rule Extensions=".slddrw"         Task="PDF file from 2D Drawing" />
+    <!-- add more, e.g. DXF from drawings:
+    <Rule Extensions=".slddrw"         Task="DXF file from 2D Drawing" />
+    -->
+  </Rules>
+
+  <!-- Approving an assembly also converts the parts/sub-assemblies it references. -->
+  <IncludeAssemblyChildren>true</IncludeAssemblyChildren>
+
+  <!-- true: skip children whose state is not listed in ChildStates below.
+       false: convert every child, whatever its state (draft parts too). -->
+  <ChildrenMustBeApproved>true</ChildrenMustBeApproved>
+
+  <!-- States a child may be in. Seen in the vault: parts under an approved assembly sit in
+       'Send To Erp-Only PART!'. These never trigger conversion on their own. -->
+  <ChildStates>
+    <State>Manager Approved</State>
+    <State>Library-Manager Approved</State>
+    <State>SWE Managers Approved</State>
+    <State>Send To Erp-Only PART!</State>
+    <State>Send Library Part to Erp-Only PART!</State>
+    <State>FILES SENT TO ERP</State>
+  </ChildStates>
+</Config>
