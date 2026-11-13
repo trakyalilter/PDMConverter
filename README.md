@@ -9,10 +9,10 @@ Explorer, so output folders, task accounts and permissions stay as they are toda
 
 ## Download
 
-Get `PdmApproveConvert_v0.1.0.zip` from the
+Get the newest `PdmApproveConvert_v<version>.zip` from the
 [Releases page](https://github.com/trakyalilter/PDMConverter/releases). It holds `PdmApproveConvert.dll` (the
 add-in), `Probe\Probe.exe` (lists your task and state names), `config.sample.xml` and this README.
-**v0.1.0 is a pre-release: starting a task from inside PDM has not been proven yet. Follow the pilot test plan
+**These are pre-releases: starting a task from inside PDM has not been proven yet. Follow the pilot test plan
 below before using it for real work.**
 
 Built and tested against SOLIDWORKS PDM 2018 (18.5 clients, 18.3 server). Other versions are untested.
