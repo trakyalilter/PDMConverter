@@ -50,6 +50,21 @@ namespace PdmApproveConvert
             }
         }
 
+        /// <summary>Who/where this log line comes from: Windows user, PC, host process.</summary>
+        public static string Who()
+        {
+            try
+            {
+                return "user=" + Environment.UserName + " pc=" + Environment.MachineName +
+                       " process=" + System.Diagnostics.Process.GetCurrentProcess().ProcessName +
+                       " pid=" + System.Diagnostics.Process.GetCurrentProcess().Id;
+            }
+            catch
+            {
+                return "user=? pc=?";
+            }
+        }
+
         public static void Error(string context, Exception ex)
         {
             Write("ERROR " + context + ": " + ex.GetType().Name + ": " + ex.Message);

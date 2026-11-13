@@ -62,12 +62,21 @@ pilot PC (log off/on if it does not pick it up). If the PC does not load it, run
 **4. Dry run.** Put `CLAUDE_TEST_PART.SLDPRT` through the approve transition.
 Read `%LOCALAPPDATA%\PdmApproveConvert\addin.log` of the approving user. Expect:
 ```
+PostState received: 1 item(s); user=<windows user> pc=<pc> process=<exe>; config found, DryRun=True
 PostState raw: id1=<file id> id2=<folder id> ...
 queue 'STEP file from 3D Model' <- CLAUDE_TEST_PART.SLDPRT (v1)
 DRY RUN: would run task 'STEP file from 3D Model' on 1 file(s)
 ```
-If there is no `raw` line, the add-in is not loaded. If the ids look wrong, the PostState layout differs from the
-assumption. Stop here and send me the log.
+If the ids look wrong, the PostState layout differs from the assumption. Stop here and send me the log.
+
+**A state change left no line in the log?** Every state change this PC/user performs is logged as
+`PostState received`, even when the add-in is inert or ignores the file. No line means the change happened
+somewhere else, so read the log of the PC and Windows user that actually clicked the transition:
+* `LOADED v0.2.0 ... config found` at the top: add-in loaded, config present.
+* `LOADED ... config MISSING (add-in inert)` or `inert: no config file`: copy `config.xml` to that PC.
+* No `LOADED` line at all today: add-in is not loaded there. Restart Explorer / log off and on.
+* `skip '<file>': state '<x>' is not an approved state`: it saw the change, the new state is just not a trigger.
+  Add that state to `<ApprovedStates>` if it should trigger.
 
 **5. Live.** Set `<DryRun>false</DryRun>`, put the file back to an earlier state, approve again.
 Watch the log. Expected: `calling RunTask ...` then `STARTED task ...`, then a new entry in the Task list.

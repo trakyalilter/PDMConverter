@@ -29,12 +29,14 @@ namespace PdmApproveConvert
                 poInfo.mbsAddInName = "Approve to Convert";
                 poInfo.mbsCompany = "CNC";
                 poInfo.mbsDescription = "Starts PDM Convert tasks (PDF/STEP) when a file is approved.";
-                poInfo.mlAddInVersion = 1;
+                poInfo.mlAddInVersion = 2;
                 poInfo.mlRequiredVersionMajor = 6;
                 poInfo.mlRequiredVersionMinor = 4;
 
                 poCmdMgr.AddHook(EdmCmdType.EdmCmd_PostState, null);
-                Log.Write("GetAddInInfo: hooked EdmCmd_PostState");
+                Log.Write("LOADED v0.2.0: hooked EdmCmd_PostState; " + Log.Who() +
+                          "; config " + (File.Exists(Config.ConfigPath) ? "found" : "MISSING (add-in inert)") +
+                          " at " + Config.ConfigPath);
             }
             catch (Exception ex)
             {
@@ -65,10 +67,25 @@ namespace PdmApproveConvert
 
         private static void HandlePostState(EdmCmd cmd, EdmCmdData[] data)
         {
-            if (data == null || data.Length == 0) return;
+            if (data == null || data.Length == 0)
+            {
+                Log.Write("PostState received with no items; " + Log.Who());
+                return;
+            }
 
+            // Logged for EVERY state change this process receives, before anything can skip it,
+            // so a missing line means the event never reached this PC/user.
             Config cfg = Config.Load();
-            if (cfg == null) return; // no config.xml on this PC: do nothing at all
+            Log.Write("PostState received: " + data.Length + " item(s); " + Log.Who() +
+                      "; config " + (cfg == null ? "MISSING (inert)" : "found, DryRun=" + cfg.DryRun));
+            foreach (EdmCmdData d in data)
+            {
+                // Raw dump: confirms the field layout of the real event.
+                Log.Write(string.Format("PostState raw: id1={0} id2={1} s1='{2}' s2='{3}' s3='{4}'",
+                    d.mlObjectID1, d.mlObjectID2, d.mbsStrData1, d.mbsStrData2, d.mbsStrData3));
+            }
+
+            if (cfg == null) return; // no config.xml on this PC: do nothing else
 
             IEdmVault7 vault = (IEdmVault7)cmd.mpoVault;
 
@@ -77,10 +94,6 @@ namespace PdmApproveConvert
 
             foreach (EdmCmdData d in data)
             {
-                // Raw dump: lets you confirm the field layout on the first real run.
-                Log.Write(string.Format("PostState raw: id1={0} id2={1} s1='{2}' s2='{3}' s3='{4}'",
-                    d.mlObjectID1, d.mlObjectID2, d.mbsStrData1, d.mbsStrData2, d.mbsStrData3));
-
                 IEdmFile5 file = TryGetFile(vault, d.mlObjectID1);
                 if (file == null) continue; // folder state change, or gone
 
